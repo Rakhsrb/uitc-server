@@ -8,22 +8,23 @@ const __dirname = path.dirname(__filename);
 
 export const getAllProjects = async (req, res) => {
   try {
-    const { pageSize = 6, title, category } = req.query;
+    let { page = 1, pageSize = 6, category } = req.query;
+    page = Number(page);
+    pageSize = Number(pageSize);
 
-    const titleRegExp = new RegExp(title, "i");
-    const categoryRegExp = new RegExp(category, "i");
+    const categoryRegExp = category ? new RegExp(category, "i") : /.*/;
 
     const projects = await Project.find({
-      title: titleRegExp,
       category: categoryRegExp,
-    }).limit(pageSize);
+    })
+      .skip((page - 1) * pageSize)
+      .limit(pageSize);
 
     const total = await Project.countDocuments({
-      title: titleRegExp,
       category: categoryRegExp,
     });
 
-    res.status(200).json({ data: projects, total });
+    res.status(200).json({ data: projects, total, page, pageSize });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

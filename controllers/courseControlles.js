@@ -8,15 +8,14 @@ const __dirname = path.dirname(__filename);
 
 //  getAllCourses
 export const getAllCourses = async function (req, res) {
-
   try {
     const titleRegExp = new RegExp(req.query.title, "i");
 
     const courses = await Course.find({
       title: titleRegExp,
-    })
+    });
 
-    const total = await Course.countDocuments()
+    const total = await Course.countDocuments();
     return res.status(200).json({ data: courses, total });
   } catch (error) {
     return res.status(500).json({ message: error.message });
@@ -91,7 +90,7 @@ export const deleteCourse = async (req, res) => {
       } catch (err) {
         console.error(`Failed to delete image: ${filePath}`, err);
       }
-    };
+    }
 
     return res.status(200).json({ message: "Course Has Been Deleted!" });
   } catch (error) {
