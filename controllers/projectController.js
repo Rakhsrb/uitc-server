@@ -12,20 +12,28 @@ export const getAllProjects = async (req, res) => {
     page = Number(page);
     pageSize = Number(pageSize);
 
+    if (isNaN(page) || isNaN(pageSize) || page < 1 || pageSize < 1) {
+      return res.status(400).json({
+        message: "Invalid page or pageSize parameters",
+      });
+    }
+
     const categoryRegExp = category ? new RegExp(category, "i") : /.*/;
 
-    const projects = await Project.find({
-      category: categoryRegExp,
-    })
-      .skip((page - 1) * pageSize)
-      .limit(pageSize);
+    const [projects, total] = await Promise.all([
+      Project.find({
+        category: categoryRegExp,
+      })
+        .skip((page - 1) * pageSize)
+        .limit(pageSize),
+      Project.countDocuments({
+        category: categoryRegExp,
+      }),
+    ]);
 
-    const total = await Project.countDocuments({
-      category: categoryRegExp,
-    });
-
-    res.status(200).json({ data: projects, total, page, pageSize });
+    res.status(200).json({ data: projects, total });
   } catch (error) {
+    console.error("Error fetching projects:", error);
     res.status(500).json({ message: error.message });
   }
 };
